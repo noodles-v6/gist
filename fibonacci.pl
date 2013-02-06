@@ -7,9 +7,9 @@ $new = 1; # 幼年兔子个数
 $sum = 1; # 所有兔子个数
 
 while (1) {
-  $sum = $old + $new;
+    $sum = $old + $new;
 
-	last if $sum > $n;
+    last if $sum > $n;
 	
 	print $sum, "\n";
 	# 一个月后
