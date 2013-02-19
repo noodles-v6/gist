@@ -10,14 +10,14 @@ string generate(const char startWithChar)
     int charLen = 0;
     bool bStartCharValid = false;
     
-    if ('7' != startWithChar && '8' != startWithChar)
+    if (startWithChar >= '0' && startWithChar <= '9')
     {
-        charLen = 9;
+        charLen = 9 - 1;
+    	bStartCharValid = true;
     }
     else
     {
-        charLen = 9 - 1;
-        bStartCharValid = true;
+        charLen = 9;        
     }
     
     const int BUF_LEN  = 32;
