@@ -1,9 +1,10 @@
- import java.util.Properties;
+import java.util.Properties;
 
- public class props {
-     static public void main(String args[]) {
-         Properties props;
-         props = System.getProperties();
-         props.list(System.out);
-     }
- }
+// http://www.jensign.com/JavaScience/www/javaproperties.html
+public class props {
+    static public void main(String args[]) {
+        Properties props;
+        props = System.getProperties();
+        props.list(System.out);
+    }
+}
