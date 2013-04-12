@@ -6,3 +6,5 @@
 1. 通过 KeyRemap4MacBook 软件修改。但是 `Caps Lock` 键是异常键，这个软件改不了；
 
 2. 通过 Mac 的系统键盘设置修改，支持 Caps Lock/Control/Option/Command 四个的remap
+
+Windows下的remap工具：[KeyTweak](http://webpages.charter.net/krumsick/)
