@@ -24,3 +24,12 @@ Hubut就会自动地把结果推送到Campfire 的聊天室里。
 ## 对于使用Free Heroku的用户需要注意
 
 千万别忘了加 HEROHU_URL 变量
+
+## --name 参数很重要
+
+hubot -a <campfire|hipchat> -n <name>
+
+<name>参数很重要，设置不对，可能会造成robot能进入room，但不能收到hubot消息并处理返回。
+
+    - 在hipchat里，name为Account Settings/"XMPP/Jabber info"/Username
+    - 在campfire里，name为my info/{Username}
