@@ -36,14 +36,22 @@
     
 使用IDispatch指针回调的核心代码为：
 
-    <code>
-    </code>
+    IDispatch* spCallback = NULL;
+    ...
+    DISPPARAMS params = { avarParams, NULL, 1, 0 };
+
+	if(spCallback)
+		spCallback->Invoke(0, 
+			IID_NULL, 
+			LOCALE_USER_DEFAULT, 
+			DISPATCH_METHOD, 
+			&params, NULL, NULL, NULL);
   
 # Firefox/Chrome等插件开发
 
-这些浏览器都是使用NPAPI做插件开发的。
+这些浏览器都是使用NPAPI做插件开发的。[基本步骤见](http://mozilla.com.cn/post/21666/)
 
-NPAPI异步调用JS的主要接口为：NPP_Invoke_Default。
+NPAPI异步调用JS的主要接口为：NPN_InvokeDefault。
 
 # 注意点
 
