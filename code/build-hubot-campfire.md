@@ -24,3 +24,7 @@ Hubut就会自动地把结果推送到Campfire 的聊天室里。
 ## 对于使用Free Heroku的用户需要注意
 
 千万别忘了加 HEROHU_URL 变量
+
+## 调试Hubot
+
+设置日志级别：`HUBOT_LOG_LEVEL=debug` 
