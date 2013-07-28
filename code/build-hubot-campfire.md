@@ -25,6 +25,17 @@ Hubut就会自动地把结果推送到Campfire 的聊天室里。
 
 千万别忘了加 HEROHU_URL 变量
 
+<<<<<<< HEAD
 ## 调试Hubot
 
 设置日志级别：`HUBOT_LOG_LEVEL=debug` 
+=======
+## --name 参数很重要
+
+hubot -a <campfire|hipchat> -n <name>
+
+<name>参数很重要，设置不对，可能会造成robot能进入room，但不能收到hubot消息并处理返回。
+
+    - 在hipchat里，name为Account Settings/"XMPP/Jabber info"/Username
+    - 在campfire里，name为my info/{Username}
+>>>>>>> db899e4bc9201a6fe2c23e206dda3756726809cd
