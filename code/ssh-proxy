@@ -1,0 +1,60 @@
+#!/bin/bash
+# add yourself before use to sudoerrs
+#  Cmnd_Alias PROXY = /usr/sbin/networksetup -setsocksfirewallproxy*
+#  your_login ALL=NOPASSWD: PROXY
+
+SSH_HOST="rungumptb@199.233.236.100"
+PORT=7070 # configured in System Preferences
+#NET_SERVICE="Wi-Fi" # on MacBook Air
+NET_SERVICE="Ethernet"
+
+SSH_OPTS="-C2qTnNfD"
+SSH_CMD="ssh ${SSH_OPTS} ${PORT} ${SSH_HOST}"
+
+function ip {
+  curl icanhazip.com
+}
+
+function remote_ip {
+  curl --socks5 127.0.0.1:${PORT} icanhazip.com
+}
+
+function enable_proxy {
+  echo "Enabling proxy..."
+  sudo /usr/sbin/networksetup -setsocksfirewallproxy ${NET_SERVICE} localhost ${PORT}
+  sudo /usr/sbin/networksetup -setsocksfirewallproxystate ${NET_SERVICE} on
+  ${SSH_CMD}
+  remote_ip
+}
+
+function disable_proxy {
+  echo "Disabling proxy..."
+  ps -ax | grep "${SSH_CMD}" | grep -v grep | awk '{print $1}'| xargs kill
+  sudo /usr/sbin/networksetup -setsocksfirewallproxystate ${NET_SERVICE} off
+  ip
+}
+
+function show_status {
+  ps -ax | grep "${SSH_CMD}" | grep -v grep > /dev/null
+  if [ $? -eq 0 ]; then
+    echo "Tunnel: ✓ [${SSH_HOST}]"
+  else
+    echo "Tunnel: ✘"
+  fi
+  /usr/sbin/networksetup -getsocksfirewallproxy ${NET_SERVICE} | grep Enabled | grep Yes > /dev/null
+  if [ $? -eq 0 ]; then
+    echo "Proxy:  ✓ [${NET_SERVICE}]"
+  else                   
+    echo "Proxy:  ✘ [${NET_SERVICE}]"
+  fi
+}
+
+case "$1" in
+  on) enable_proxy
+    ;;
+
+  off) disable_proxy
+    ;;
+
+  *) show_status
+esac
