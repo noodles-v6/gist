@@ -19,13 +19,11 @@ filenum = 0
 
 def save_file(*args):
     handler, filename, data, sleeptime = args[0]
-    global filenum
-    filenum += 1
-    filename = str(filenum) + '.tmp'
-    open(filename, 'wb').write(data)
+    f = open(filename, 'wb')
+    f.write(data)
+    f.close()
     time.sleep(sleeptime)
-    if filenum != 2:
-        handler.send('success : ' + filename + ' => NDA matched, stop upload')
+    handler.send('success : ' + filename)
 
 def save_file_callback():
     print "save_file_callback"
@@ -33,20 +31,20 @@ def save_file_callback():
 class FileWebSocketHandler(WebSocket):
     def received_message(self, m):
         if isinstance(m, BinaryMessage):
-            filename = str(uuid.uuid4()) + '.tmp'
+            global filenum
+            filenum += 1
+            filename = str(filenum) + '.tmp'
+            #filename = str(uuid.uuid4()) + '.tmp'
             requests = threadpool.makeRequests(save_file, [[self, filename, m.data, 1.5]], save_file_callback)
             [pool.putRequest(req) for req in requests]
+
         elif isinstance(m, TextMessage):
+            cherrypy.log("got: " + m.data)
             if  m.data == 'getsessionid':
                 ret = {'code':0, 'sessionid':'sessionid_134234242'}
                 self.send(json.dumps(ret))
             else:
-                self.send('invalid command')
-
-    def opened(self):
-        #ret = {'code':0, 'sessionid':'sessionid_134234242'}
-        #self.send(json.dumps(ret))
-        self.send('xxxx')
+                self.send('Invalid command: ' + m.data)
 
     def closed(self, code, reason=":-\)"):
         print self, " closed"
