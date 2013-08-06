@@ -12,11 +12,15 @@ class FileUploadClient(WebSocketClient):
                 yield d
             ifile.close()
 
-        self.send(data_provider("FileTraveller.java"), True)
-        self.send(data_provider("bigfile.bin"), True)
+        #self.send(data_provider("FileTraveller.java"), True)
+        #self.send(data_provider("bigfile.bin"), True)
         #for i in range(0, 200, 25):
         #    print(i)
         #    self.send("*" * i)
+        
+        f = open("2MB.file", 'rb').read()
+        self.send(f, True)
+        f.close()
 
     def closed(self, code, reason):
         print(("Closed down", code, reason))

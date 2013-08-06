@@ -272,19 +272,43 @@ Java语言的实现[看这里](https://java.net/projects/websocket-spec/pages/We
 
 根据我们的业务特征，对一些现有的实现做了简单的调研（我们主要做了Java,IOS的WebSocket客户端实现和Python的服务端实现）：
 
-1. 网络正常情况下，WebSocket的双向通讯可以正常工作，TODO 数据分片发送需要测试。
+1. 网络正常情况下
+	
+	- WebSocket的双向通讯可以正常工作；
+	
+	- 使用WebSocket-for-Python开发的客户端和服务端，数据分包发送是可以的；
+	
+	- 无论是否采用分包发送，发送的文件过大时，服务器端内存都会吃的很厉害（因为在文件整个完成发送前，服务端都是把接收到的数据保存在内存里的）。
+	
+	- 分包发送的主要目的是（协议里已经指出）
+		
+		* 可以让客户端不用buffer消息。
+		
+		* 多路复用。
 
-2. 网络异常情况下：
+2. 网络异常情况下
 
  	 - Java-WebSocket客户端在网络异常的时候，不会报错，即onerror不会被触发，网络恢复后消息仍然可以被发出；
 
 	 - Jetty的客户端在网络异常时5min时提示网络异常，无论这5min内是否有send数据给服务端（其中，5min是Jetty的默认设置），5min内恢复网络消息仍然可以被发出；
 
-	 - TODO ios端
+	 - iOS WebSocket API 实现，采用 [SocketRocket](https://github.com/square/SocketRocket)，SocketRocket 底层采用 NSStream 来与 Server 通讯。
+	 以下情况将调用 onerror：
+	 	
+		* Http handshake, response code >= 400, 抛出“received bad response code from server”。
+	 	* 效验 secKey 失败，抛出“Invalid Sec-WebSocket-Accept response”。
+	 	* 效验 HTTP Header 失败，抛出“Server specified Sec-WebSocket-Protocol that wasn't requested”。
+	 	* NSOutoutStream write 数据时返回 -1，抛出“Error writing to stream”。
+	 	* NSStreamEventErrorOccurred 事件。
+	 	* NSStreamEventEndEncountered 事件，如果 streamError 不为 nil。
+	 	* NSInputStream bytes_read 小于 0。
+	 	* wws 协议时，服务器证书无效，抛出“Invalid server cert”。
+	 	
+		备注：事件 onerror 触发后，不会触发 onclose。
 	 
 3. TODO 服务端性能调研
 
-4. 目前Java-WebSoceket的wss很薄弱。TODO 测试安全，使用wireshark抓包
+4. 目前Java-WebSoceket的wss很薄弱。TODO 测试安全。
 
 ## 5 附件
 
