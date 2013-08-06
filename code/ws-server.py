@@ -22,7 +22,6 @@ def save_file(*args):
     f = open(filename, 'wb')
     f.write(data)
     f.close()
-    time.sleep(sleeptime)
     handler.send('success : ' + filename)
 
 def save_file_callback():
