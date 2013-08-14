@@ -18,5 +18,4 @@ IFS=$'\n'
 
 # 创建一个指定大小的文件
 # 测试的时候非常有用
-# inputfile要能满足bs
-dd if=/path/to/inputfile of=/path/to/outputfile bs=1M count=1
+dd if=/dev/zero of=/path/to/outputfile bs=1M count=1
