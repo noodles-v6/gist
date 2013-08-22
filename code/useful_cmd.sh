@@ -15,3 +15,7 @@ find . -type f -exec perl -i -pe 's/something/another/g' {} \;
 # TODO  看看结果怎样
 IFS=$'\n'
 (IFS=$'\n';for i in $(< a.txt);do echo $i;done)
+
+# 创建一个指定大小的文件
+# 测试的时候非常有用
+dd if=/dev/zero of=/path/to/outputfile bs=1M count=1
