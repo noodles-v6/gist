@@ -1,0 +1,194 @@
+#!/usr/bin/env perl
+
+use 5.010;
+use strict;
+use warnings;
+use DBI;
+use Uniq;
+use DateTime;
+use Email::MIME;
+use Email::Sender::Simple qw(sendmail);
+use Email::Sender::Transport::SMTP;
+
+#use IO::All;
+#use Smart::Comments;
+#use Text::Markdown qw(markdown);
+
+my $ds      = "dbi:mysql:database=time_tracker;host=192.168.1.17";
+my $usrname = 'root';
+my $passwd  = 'root';
+
+my $dbh = DBI->connect( $ds, $usrname, $passwd );
+
+$dbh->do(qq{SET NAMES 'utf8';});
+
+my $sth = $dbh->prepare(
+    "select userid, username, team, ismanager FROM user 
+               WHERE team <> 'N/A'"
+);
+$sth->execute();
+
+my $rs    = $sth->fetchall_hashref('userid');
+my @users = values %$rs;
+my @teams = uniq sort map { $_->{team} } @users;
+
+$sth = $dbh->prepare(
+    "SELECT d.id, pp, t.typeName, activity, product, version, rt, linking, 
+            costTime, d.userid, d.created_at, DATE(?) - DATE(d.created_at) as diff
+         FROM duty d, dutyType t 
+         WHERE d.dutyType = t.id 
+            AND ((DATE(?) - DATE(d.created_at) in (1, 2, 3) AND pp = 'plan') 
+            OR DATE(d.created_at) = DATE(?)) 
+         ORDER BY d.created_at ASC"
+);
+
+my $now_ymd = DateTime->today( time_zone => 'local' )->ymd();
+
+$sth->bind_param( 1, $now_ymd );
+$sth->bind_param( 2, $now_ymd );
+$sth->bind_param( 3, $now_ymd );
+
+$sth->execute();
+
+my @full_duties = uniq sort values %{ $sth->fetchall_hashref('id') };
+
+for my $user (@users) {
+    my @duties = grep { $_ if $_->{userid} eq $user->{userid} } @full_duties;
+
+    next if scalar @duties == 0;
+
+    my @to_s;
+    my @cc_s;
+
+    if ( $user->{ismanager} eq 'y' ) {
+        @to_s = qw(li_yong);
+        @cc_s = get_un_managers( \@users, $user );
+        push @cc_s, $_ for qw(wang_yangbin team_pjm haitao.xin);
+    }
+    else {
+        @to_s = get_manager( \@users, $user );
+        @cc_s = get_un_managers( \@users, $user );
+        push @cc_s, $_ for qw(li_yong wang_yangbin team_pjm haitao.xin);
+    }
+    ### @cc_s
+
+    my $subject =
+        $user->{username}
+      . "'s daily report ("
+      . DateTime->today()->add( days => -1 )->ymd() . ")";
+    my $body_html = gen_body( \@to_s, \@duties );
+
+    my $message = Email::MIME->create(
+        header_str => [
+            From       => 'daily_report@vobile.cn',
+            To         => join( ",", map { $_ . '@vobile.cn' } @to_s ),
+            Cc         => join( ",", map { $_ . '@vobile.cn' } @cc_s ),
+            'Reply-To' => $user->{username} . '@vobile.cn',
+            #To      => 'fang_xing@vobile.cn',
+            #'Reply-To'     => 'fang_xing@vobile.cn',
+            Subject => $subject,
+        ],
+        attributes => {
+            content_type => 'text/html',
+            encoding     => 'base64',
+            charset      => 'utf-8',
+        },
+        body => $body_html,
+    );
+
+    my $transport = Email::Sender::Transport::SMTP->new({
+            host => 'mail.vobile.cn',
+            port => 25
+        });
+
+    #$message->as_string > io("$user->{username}".".txt");
+    sendmail($message, { transport => $transport });
+}
+
+sub get_manager {
+    my ( $users, $user ) = @_;
+
+    return
+      map { $_->{username} }
+      grep { $_->{ismanager} eq 'y' && $_->{team} eq $user->{team} } @$users;
+}
+
+sub get_un_managers {
+    my ( $users, $user ) = @_;
+
+    return
+      map { $_->{username} }
+      grep { $_->{ismanager} eq 'n' && $_->{team} eq $user->{team} } @$users;
+}
+
+sub gen_body {
+    my ( $to_s, $duties ) = @_;
+
+    my $original_plan = '';
+    my $plan          = '';
+    my $progress      = '';
+    my $hello         = join( ", ", @$to_s );
+
+    for (@$duties) {
+        $plan .=
+"<tr><td>$_->{typeName}</td><td>$_->{activity}</td><td>$_->{costTime}</td><td>$_->{created_at}</td></tr>"
+          if $_->{pp} eq 'plan' && $_->{diff} <= 1;
+
+        $original_plan .=
+"<tr><td>$_->{typeName}</td><td>$_->{activity}</td><td>$_->{costTime}</td><td>$_->{created_at}</td></tr>"
+          if $_->{pp} eq 'plan' && $_->{diff} >= 2;
+    }
+
+    for (@$duties) {
+        $progress .=
+"<tr><td>$_->{typeName}</td><td>$_->{activity}</td><td>$_->{costTime}</td><td>$_->{created_at}</td></tr>"
+          if $_->{pp} eq 'progress';
+    }
+
+    return <<"_EOC_";
+<html>
+<head>
+<style type="text/css">
+table.gridtable {
+	font-family: verdana,arial,sans-serif;
+	font-size:11px;
+	color:#333333;
+	border-color: #666666;
+}
+table.gridtable th {
+	border-color: #666666;
+	background-color: #dedede;
+}
+table.gridtable td {
+	border-color: #666666;
+	background-color: #ffffff;
+}
+</style>
+</head>
+
+<body>
+<b>To $hello:</b>
+<p>This is my daily report:</p>
+
+<h3>Original Plans</h3>
+<table class="gridtable">
+    <tr><th>Type</th><th>Content</th><th>Cost(h)</th><th>Create At</th></tr>
+    $original_plan
+</table>
+
+<h3>Progress</h3>
+<table class="gridtable">
+    <tr><th>Type</th><th>Content</th><th>Cost(h)</th><th>Create At</th></tr>
+    $progress
+</table>
+
+<h3>Plans</h3>
+<table class="gridtable">
+    <tr><th>Type</th><th>Content</th><th>Cost(h)</th><th>Create At</th></tr>
+    $plan
+</table>
+
+</body>
+</html>
+_EOC_
+}
