@@ -1,4 +1,6 @@
 #!/usr/bin/env perl
+#
+# 来源于：http://www.perlmonks.org/?node_id=396839
 
 do {
     progress_bar( $_, 100, 25, '=');
