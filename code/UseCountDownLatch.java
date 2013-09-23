@@ -38,7 +38,7 @@ class Worker implements Runnable {
     public void run() {
         this.doWork();
         try {
-           TimeUnit.SECONDS.sleep(new Random().nextInt(8)); 
+           TimeUnit.SECONDS.sleep(new Random().nextInt(20)); 
         } catch(InterruptedException e) {
         }
         System.out.println(this.name + " has done works");
