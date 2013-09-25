@@ -1,0 +1,9 @@
+#!/usr/bin/env stap
+probe java("ThreadedExample").class("ThreadedExample").method("printMessage(int)")
+{
+        printf("Hit printMessage(int): %d\n", $arg1)
+}
+probe java("ThreadedExample").class("ThreadedExample").method("printMessage(long)")
+{
+        printf("Hit printMessage(long): %d\n", $arg1)
+}
