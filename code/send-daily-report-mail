@@ -84,8 +84,8 @@ for my $user (@users) {
             To         => join( ",", map { $_ . '@vvvvv.cn' } @to_s ),
             Cc         => join( ",", map { $_ . '@vvvvv.cn' } @cc_s ),
             'Reply-To' => $user->{username} . '@vvvvv.cn',
-            #To      => 'fang_xing@vobile.cn',
-            #'Reply-To'     => 'fang_xing@vobile.cn',
+            #To      => 'fang_xing@vvvvv.cn',
+            #'Reply-To'     => 'fang_xing@vvvvv.cn',
             Subject => $subject,
         ],
         attributes => {
