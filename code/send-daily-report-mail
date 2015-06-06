@@ -80,10 +80,10 @@ for my $user (@users) {
 
     my $message = Email::MIME->create(
         header_str => [
-            From       => 'daily_report@vobile.cn',
-            To         => join( ",", map { $_ . '@vobile.cn' } @to_s ),
-            Cc         => join( ",", map { $_ . '@vobile.cn' } @cc_s ),
-            'Reply-To' => $user->{username} . '@vobile.cn',
+            From       => 'daily_report@vvvvv.cn',
+            To         => join( ",", map { $_ . '@vvvvv.cn' } @to_s ),
+            Cc         => join( ",", map { $_ . '@vvvvv.cn' } @cc_s ),
+            'Reply-To' => $user->{username} . '@vvvvv.cn',
             #To      => 'fang_xing@vobile.cn',
             #'Reply-To'     => 'fang_xing@vobile.cn',
             Subject => $subject,
@@ -97,7 +97,7 @@ for my $user (@users) {
     );
 
     my $transport = Email::Sender::Transport::SMTP->new({
-            host => 'mail.vobile.cn',
+            host => 'mail.vvvvv.cn',
             port => 25
         });
 
